@@ -1,4 +1,4 @@
-Github Link for the image-filter project:- https://gitlab.com/shikharagerawal1/image-filter
+Github Link for the image-filter project:- https://github.com/shikharagerawal1/image-filter-c2-udacity
 
 Elastic beanstalk endpoint URL:- http://udagram-agrawal-imagefilter-dev.us-east-1.elasticbeanstalk.com
 

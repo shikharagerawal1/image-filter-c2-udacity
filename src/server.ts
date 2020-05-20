@@ -1,17 +1,15 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import {filterImageFromURL, deleteLocalFiles} from './util/util';
-
-(async () => {
-
+import express from 'express'
+import bodyParser from 'body-parser'
+import { filterImageFromURL, deleteLocalFiles } from './util/util'
+;(async () => {
   // Init the Express application
-  const app = express();
+  const app = express()
 
   // Set the network port
-  const port = process.env.PORT || 8082;
-  
+  const port = process.env.PORT || 8082
+
   // Use the body parser middleware for post requests
-  app.use(bodyParser.json());
+  app.use(bodyParser.json())
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
@@ -28,19 +26,63 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
+  // ------
+  // app.get('/filteredimage', async (req, res) => {
+  //   const imageUrl = req.query.image_url
 
+  //   // check imageUrl is valid
+  //   if (!imageUrl) {
+  //     return res.status(400).send({
+  //       message: 'The image url is required or malformed',
+  //     })
+  //   }
+
+  //   try {
+  //     console
+  //     const filteredImageFromURL = await filterImageFromURL(imageUrl)
+  //     res.sendFile(filteredImageFromURL, () =>
+  //       deleteLocalFiles([filteredImageFromURL])
+  //     )
+  //   } catch (error) {
+  //     res.sendStatus(422).send('Unable to process image at the provided url')
+  //   }
+  // })
+  // ----
+  const validateImageQuery = async (imageUrl: string) => {
+    var res = imageUrl.match(
+      /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g
+    )
+    if (res == null) return false
+    else return true
+  }
+
+  app.get('/filteredimage', async (req, res) => {
+    let { image_url } = req.query
+    let isValid = await validateImageQuery(image_url)
+    if (!isValid) {
+      return res.status(400).send('invalid url!')
+    }
+    try {
+      let filteredpath = await filterImageFromURL(image_url)
+      res.sendFile(filteredpath, async () => {
+        await deleteLocalFiles([filteredpath])
+      })
+    } catch (error) {
+      // return res.status(400).send(JSON.stringify(error))
+      res.sendStatus(422).send('Unable to process image at the provided url')
+    }
+  })
   //! END @TODO1
-  
+
   // Root Endpoint
   // Displays a simple message to the user
-  app.get( "/", async ( req, res ) => {
-    res.send("try GET /filteredimage?image_url={{}}")
-  } );
-  
+  app.get('/', async (req, res) => {
+    res.send('try GET /filteredimage?image_url={{}}')
+  })
 
   // Start the Server
-  app.listen( port, () => {
-      console.log( `server running http://localhost:${ port }` );
-      console.log( `press CTRL+C to stop server` );
-  } );
-})();
+  app.listen(port, () => {
+    console.log(`server running http://localhost:${port}`)
+    console.log(`press CTRL+C to stop server`)
+  })
+})()
